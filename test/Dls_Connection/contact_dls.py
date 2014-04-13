@@ -23,7 +23,10 @@ def main():
     dlsClient = ContactDls(dlsUrl, remoteServer)
     jsonResponce = dlsClient.get_responce("")
     print "json responce\n", jsonResponce
-
+    print "-----------------------"
+    print "json key and values"
+    for key in jsonResponce.keys():
+        print "%s:\t"%(key), jsonResponce[key]
 
 if __name__ == '__main__':
     main()
