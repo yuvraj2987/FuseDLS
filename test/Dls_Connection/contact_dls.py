@@ -27,6 +27,12 @@ def main():
     print "json key and values"
     for key in jsonResponce.keys():
         print "%s:\t"%(key), jsonResponce[key]
+    
+    files = jsonResponce['files']
+    
+    for f in files:
+        print "File: "+f['name']
+        print "Permission: ", f['perm']
 
 if __name__ == '__main__':
     main()
