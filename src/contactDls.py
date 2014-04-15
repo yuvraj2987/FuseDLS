@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
 import requests
-
+import logging
 class ContactDls:
     ' Class to communicate with Directory Listing Service'
 
@@ -10,9 +10,13 @@ class ContactDls:
         self.remoteServer = serverUrl
 
     def get_responce(self, path):
+        logging.debug("---- get_responce starts -----")
+        logging.debug("Passed path:%s", path)
         path = self.remoteServer+path
+        logging.debug("Complete path:%s", path)
         payload = {"URI":path}
         http_responce = requests.get(self.dls, params=payload)
+        logging.debug("-------- get_responce returns responce as dict ----")
         return http_responce.json()
 #End of ContactDls
 
