@@ -16,7 +16,7 @@ class ContactDls:
         logging.debug("Complete path:%s", path)
         payload = {"URI":path}
         http_responce = requests.get(self.dls, params=payload)
-        logging.debug("Responce from DLS: %s", http_responce.text())
+        logging.debug("-------- get_responce returns responce as dict ----")
         return http_responce.json()
 #End of ContactDls
 
