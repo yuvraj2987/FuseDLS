@@ -18,7 +18,8 @@ class ContactDls:
 
 def main():
     print "Testing ContactDls class"
-    dlsUrl = "http://ec2-184-73-223-158.compute-1.amazonaws.com:8080/DirectoryListingService/rest/dls/list"
+    #dlsUrl = "http://ec2-184-73-223-158.compute-1.amazonaws.com:8080/DirectoryListingService/rest/dls/list"
+    dlsUrl = "http://didclab-ws8.cse.buffalo.edu:8080/DirectoryListingService/rest/dls/list"
     remoteServer = "ftp://ftp.freebsd.org"
     dlsClient = ContactDls(dlsUrl, remoteServer)
     jsonResponce = dlsClient.get_responce("")
