@@ -14,6 +14,11 @@ class FuseDls(Operations):
     def __init__(self, root, dls):
         self.root = root
         self.dlsClient = dls
+        self.curPath = "/"
+
+    def _full_path(self, partial):
+        logging.debug("-------- get full path called -----")
+
     def _responce_to_stat(self, responce):
         "Converts dls responce to stat dict"
 
@@ -44,7 +49,13 @@ class FuseDls(Operations):
         logging.debug("--- returning from _responce_to_stat---- function")
 
 
-    ## File System calls 
+    ## File System calls
+    def access(self, path, mode):
+        logging.debug("----- access called -----")
+        dict_responce = self.dlsClient.get_responce(path)
+        if dict_responce in None:
+            raise FuseOSError(errno.EACCES)
+
     def getattr(self, path, fh=None):
         logging.debug("---- getattr called ---")
         logging.debug("path: %s \tFile Handle:%s", path, fh)
@@ -63,19 +74,19 @@ class FuseDls(Operations):
         dict_responce=self.dlsClient.get_responce(path)
         dirents = [".", ".."]
         list_files = dict_responce['files']
-        #file is of type dict
-        for file in list_files:
-            logging.debug("file:%s", file['name'])
-            name = file['name']
-            #attr = _responce_to_stat(file)
+        #f is of type dict
+        for f in list_files:
+            logging.debug("file:%s", f['name'])
+            if f is dict:
+                logging.debug("f is a dictinory")
+            name = f['name']
             dirents.append(name)
 
-        
         for r in dirents:
             logging.debug("file: %s", r)
             yield r
 
-
+    def opendir
 
 ############ Main ########################################
 def main():
