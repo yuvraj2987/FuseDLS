@@ -26,7 +26,9 @@ class Cache:
                 _key = _val.get("name")
                 _key = key+"/"+_key
                 mapping[str(_key)] = _val
-        
+
+        logging.debug("@@@@@@ Cache view @@@@@@@@@")
+        logging.debug(mapping)
         return value
 
     def add(self, *args):
@@ -35,6 +37,8 @@ class Cache:
         value = args[1]
         logging.debug("adding %s into cache"%(key))
         mapping[key] = value
+        logging.debug("@@@@@@ Cache view @@@@@@@@@")
+        logging.debug(mapping)
         return
 ### class ends
 def tmp(key):
