@@ -19,35 +19,6 @@ class FuseDls(Operations):
     def _full_path(self, partial):
         logging.debug("-------- get full path called -----")
 
-    def _responce_to_stat(self, responce):
-        "Converts dls responce to stat dict"
-
-        #stat structure as per Unix standard given by stat(2) man pages
-        stat = {}
-        for attr in ('st_dev', 'st_ino', 'st_mode', 'st_nlink', 'st_uid', 'st_gid',
-                'st_rdev', 'st_size', 'st_blksize', 'st_blocks', 'st_atime', 'st_mtime',
-                'st_ctime'):
-            stat.setdefault(attr, None)
-        #For ends
-        logging.debug("----- _responce_to_stat function starts ----")
-        #dls responce keys mapping to stat attributes
-        if responce.has_key("dir") and responce[dir]:
-            logging.debug("File is directory")
-            stat['st_mode'] = os.stat.S_ISDIR
-        else:
-            logging.debug("File is regular file")
-            stat['st_mode'] = os.stat.S_ISREG
-
-        if responce.has_key("owner"):
-            stat['st_uid'] = responce['owner']
-        if responce.has_key("group"):
-            stat['st_gid'] = responce['group']
-
-        if responce.has_key("mdtm"):
-            stat['st_mtime'] = responce['mdtm']
-            
-        logging.debug("--- returning from _responce_to_stat---- function")
-
 
     ## File System calls
     def access(self, path, mode):
@@ -96,7 +67,8 @@ def main():
     logging.info("----- Logging starts ----")
     mountpoint = "/tmp/fuse"
     remote_server = "ftp://ftp.freebsd.org"
-    dls_server = "http://ec2-184-73-223-158.compute-1.amazonaws.com:8080/DirectoryListingService/rest/dls/list"
+    #dls_server = "http://ec2-184-73-223-158.compute-1.amazonaws.com:8080/DirectoryListingService/rest/dls/list"
+    dlsUrl = "http://didclab-ws8.cse.buffalo.edu:8080/DirectoryListingService/rest/dls/list"
     dls_client = contactDls.ContactDls(dls_server, remote_server)
     logging.info("Local Mountpoint:%s", mountpoint)
     logging.info("Remote Server: %s", remote_server)
