@@ -24,6 +24,7 @@ class Cache:
             for f in fileList:
                 _val = contactDls.json_to_dict(f)
                 _key = _val.get("name")
+                _key = key+"/"+_key
                 mapping[str(_key)] = _val
         
         return value
@@ -47,7 +48,8 @@ if __name__ == "__main__":
     print "log file name: ", logfile
     logging.basicConfig(filename=logfile, format='%(levelname)s:%(message)s', level=logging.DEBUG)
     dlsUrl = "http://didclab-ws8.cse.buffalo.edu:8080/DirectoryListingService/rest/dls/list"
-    remoteServer = "ftp://ftp.freebsd.org"
+    #remoteServer = "ftp://ftp.freebsd.org"
+    remoteServer = "ftp.freebsd.org"
     dlsClient = contactDls.ContactDls(dlsUrl)
     cache = Cache(dlsClient.get_responce)
     mountResponce = dlsClient.do_mount()
