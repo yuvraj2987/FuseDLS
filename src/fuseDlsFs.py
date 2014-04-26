@@ -4,10 +4,11 @@ from __future__ import with_statement
 
 import os, sys, errno
 import logging, time
+import re
 from fuse import FUSE, FuseOSError, Operations
 #import contactDls
 from cacheDls import Cache
-from dlsClinet import json_to_dict
+import contactDls 
 #################### Classes ############################
 
 class FuseDls(Operations):
@@ -18,19 +19,27 @@ class FuseDls(Operations):
         self.curPath = "/"
         self._mount()
 
-    def _mount():
+    def _mount(self):
         logging.debug("--- mounting dls ---")
         mountResponce = self.dlsClient.do_mount()
+        self.cache.add("/", contactDls.json_to_dict(mountResponce))
         fileList = mountResponce.get("files")
         for f in fileList:
-            _val = json_to_dict(f)
+            _val = contactDls.json_to_dict(f)
             _key = _val.get("name")
             logging.debug("--- add %s to cache ---"%(_key))
-            self.cache.add(_key, _val)
+            self.cache.add(str(_key), _val)
         logging.debug("---- mount done ----")
 
-    def _full_path(self, partial):
-        logging.debug("-------- get full path called -----")
+    def _set_path(self, path):
+        logging.debug("--------set path called -----")
+        logging.debug("Original Current Path:%s", self.curPath)        
+        if path.startswith("/"):
+            self.curPath = path
+        else:
+            self.curPath += "/"+path
+
+        logging.debug("Final current path:%s", self.curPath)
 
     def _responce_to_stat(self, responce):
         "Converts dls responce to stat dict"
@@ -65,15 +74,28 @@ class FuseDls(Operations):
 
     ## File System calls
     def access(self, path, mode):
-        logging.debug("----- access called -----")
-        dict_responce = self.dlsClient.get_responce(path)
+        logging.debug("----- filesystem access called -----")
+        #dict_responce = self.dlsClient.get_responce(path)
+        self._set_path(path)
+        dict_responce = self.cache(self.curPath)
         if dict_responce in None:
             raise FuseOSError(errno.EACCES)
+        permissions = dict_responce["perm"]
+        if type(permissions) is not int:
+            raise FuseOSError(errno.EACCES)
+        if permissions %10 < 4:
+            raise FuseOSError(errno.EACCES)
+
 
     def getattr(self, path, fh=None):
-        logging.debug("---- getattr called ---")
+        logging.debug("---- filesystem getattr called ---")
         logging.debug("path: %s \tFile Handle:%s", path, fh)
-        dict_responce = self.dlsClient.get_responce(path)
+        self._set_path(path)
+        logging.debug("current path set to: %s", self.curPath)
+        #dict_responce = self.dlsClient.get_responce(path)
+        dict_responce = self.cache(self.curPath)
+        if dict_responce is None:
+            logging.debug("%s is not found in cache"%(self.curPath))
         keys = dict_responce.keys()
         logging.debug("Received keys and values")
         for key in keys:
@@ -83,9 +105,11 @@ class FuseDls(Operations):
         return st
 
     def readdir(self, path, fh):
-        logging.debug("----- readdir called ---")
+        logging.debug("----- filesystem readdir called ---")
         logging.debug("path: %s \tFile Handle:%s", path, fh)
-        dict_responce=self.dlsClient.get_responce(path)
+        self._set_path(path)
+        #dict_responce=self.dlsClient.get_responce(path)
+        dict_responce = self.cache(self.curPath)
         dirents = [".", ".."]
         list_files = dict_responce['files']
         #f is of type dict
@@ -100,7 +124,10 @@ class FuseDls(Operations):
             logging.debug("file: %s", r)
             yield r
 
-    def opendir
+    def opendir(self, path):
+        logging.debug("-------- filesystem opendir called ------")
+
+
 
 ############ Main ########################################
 def main():
@@ -108,14 +135,14 @@ def main():
     logfile = "log/"+time.strftime("%Y_%m_%d_%H_%M_%S", time.localtime(time.time()))+".log"
     logging.basicConfig(filename=logfile, format='%(levelname)s:%(message)s', level=logging.DEBUG)
     logging.info("----- Logging starts ----")
-    mountpoint = "/tmp/fuse"
+    mountpoint = "/fuse_mount/dls"
     remote_server = "ftp://ftp.freebsd.org"
     #dls_server = "http://ec2-184-73-223-158.compute-1.amazonaws.com:8080/DirectoryListingService/rest/dls/list"
     dlsUrl = "http://didclab-ws8.cse.buffalo.edu:8080/DirectoryListingService/rest/dls/list"
     logging.info("Local Mountpoint:%s", mountpoint)
     logging.info("Remote Server: %s", remote_server)
-    logging.info("Dls Server: %s", dls_server)
-    dls_client = contactDls.ContactDls(dls_server, remote_server)
+    logging.info("Dls Server: %s", dlsUrl)
+    dls_client = contactDls.ContactDls(dlsUrl)
     _cache = Cache(dls_client.get_responce)
     FUSE(FuseDls(mountpoint, _cache, dls_client), mountpoint, foreground=False)
     print "---- FuseDLS main ends ----"
