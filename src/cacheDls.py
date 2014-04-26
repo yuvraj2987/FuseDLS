@@ -1,4 +1,5 @@
 import logging, time
+import contactDls
 
 class Cache:
 
@@ -18,7 +19,22 @@ class Cache:
         logging.debug("--- cache miss for %s"%(str(key)))
         value = self.org_function(key)
         mapping[str(key)] = value
+        fileList = value.get("files")
+        if fileList is not None:
+            for f in fileList:
+                _val = contactDls.json_to_dict(f)
+                _key = _val.get("name")
+                mapping[str(_key)] = _val
+        
         return value
+
+    def add(self, *args):
+        mapping = self.mapping
+        key = args[0]
+        value = args[1]
+        logging.debug("adding %s into cache"%(key))
+        mapping[key] = value
+        return
 ### class ends
 def tmp(key):
     if type(key) != type(str()):
@@ -28,11 +44,20 @@ def tmp(key):
 
 if __name__ == "__main__":
     logfile = "log/"+time.strftime("%Y_%m_%d_%H_%M_%S", time.localtime(time.time()))+".log"
+    print "log file name: ", logfile
     logging.basicConfig(filename=logfile, format='%(levelname)s:%(message)s', level=logging.DEBUG)
-
-    cache = Cache(tmp)
-    for c in ["pub", "linux", "pub"]:
-        print (c, cache(c))
-    
-
+    dlsUrl = "http://didclab-ws8.cse.buffalo.edu:8080/DirectoryListingService/rest/dls/list"
+    remoteServer = "ftp://ftp.freebsd.org"
+    dlsClient = contactDls.ContactDls(dlsUrl)
+    cache = Cache(dlsClient.get_responce)
+    mountResponce = dlsClient.do_mount()
+    print "mount responce: ", mountResponce
+    fileList = mountResponce.get("files")
+    for f in fileList:
+        _val = contactDls.json_to_dict(f)
+        _key = _val.get("name")
+        cache.add(_key, _val)
+    print "-- cache added ----"
+    value = cache(remoteServer) 
+    print (value)
 
