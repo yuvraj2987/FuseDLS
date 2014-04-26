@@ -7,6 +7,19 @@ import requests
 import logging
 
 
+def json_to_dict(obJson):
+    """ 
+    Convert Json Object to standard python dictionary
+
+    """
+    py_dict = {}
+    attr_list = ['files', 'group', 'name', 'perm', 'owner', 'dir']
+    for attr in attr_list:
+        value = obJson.get(attr)
+        py_dict[attr] = value
+    
+    return py_dict
+
 class ContactDls:
     ' Class to communicate with Directory Listing Service'
 
@@ -17,7 +30,7 @@ class ContactDls:
         logging.debug("--- mounting the dls server caches -----")
         payload={"domount":True}
         http_responce = requests.get(self.dls, params=payload)
-        return http_responce.json()
+        return json_to_dict(http_responce.json())
 
     def get_responce(self, path):
         logging.debug("---- get_responce starts -----")
@@ -27,7 +40,7 @@ class ContactDls:
         payload = {"URI":path}
         http_responce = requests.get(self.dls, params=payload)
         logging.debug("-------- get_responce returns responce as dict ----")
-        return http_responce.json()
+        return json_to_dict(http_responce.json())
 #End of ContactDls
 
 def main():
