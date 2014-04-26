@@ -5,15 +5,16 @@ from __future__ import with_statement
 import os, sys, errno
 import logging, time
 from fuse import FUSE, FuseOSError, Operations
-import contactDls
-
+#import contactDls
+from cacheDls import Cache
 
 #################### Classes ############################
 
 class FuseDls(Operations):
-    def __init__(self, root, dls):
+    def __init__(self, root, cache, dlsClient):
         self.root = root
-        self.dlsClient = dls
+        self.cache = cache
+        self.dlsClient = dlsClient
         self.curPath = "/"
 
     def _full_path(self, partial):
@@ -54,7 +55,7 @@ class FuseDls(Operations):
         if responce.has_key("mdtm"):
             st['st_mtime'] = responce['mdtm']
             
-        logging.debug("--- returning from _responce_to_st---- function")
+        logging.debug("--- returning from _responce_to_stat function------------")
         return st
 
 
