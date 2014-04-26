@@ -5,13 +5,19 @@ import os, sys, errno
 
 import requests
 import logging
-import stat
+
+
 class ContactDls:
     ' Class to communicate with Directory Listing Service'
 
     def __init__(self, dlsUrl):
         self.dls = dlsUrl
     
+    def do_mount(self):
+        logging.debug("--- mounting the dls server caches -----")
+        payload={"domount":True}
+        http_responce = requests.get(self.dls, params=payload)
+        return http_responce.json()
 
     def get_responce(self, path):
         logging.debug("---- get_responce starts -----")
@@ -30,7 +36,8 @@ def main():
     dlsUrl = "http://didclab-ws8.cse.buffalo.edu:8080/DirectoryListingService/rest/dls/list"
     remoteServer = "ftp://ftp.freebsd.org"
     dlsClient = ContactDls(dlsUrl)
-    jsonResponce = dlsClient.get_responce(remoteServer)
+    #jsonResponce = dlsClient.get_responce(remoteServer)
+    jsonResponce = dlsClient.do_mount()
     #print "json responce\n", jsonResponce
     print "------------------------"
     for key in jsonResponce.keys():
