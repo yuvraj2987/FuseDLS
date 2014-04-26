@@ -37,9 +37,11 @@ class ContactDls:
 
     def get_responce(self, path):
         logging.debug("---- get_responce starts -----")
-        logging.debug("Passed path:%s", path)
+        logging.debug("Passed path:%s"% (path))
+        path = "ftp://"+path
+        logging.debug("Appended path:%s")
         #path = self.remoteServer+path
-        logging.debug("Complete path:%s", path)
+        logging.debug("Complete path:%s"% (path))
         payload = {"URI":path}
         http_responce = requests.get(self.dls, params=payload)
         logging.debug("-------- get_responce returns responce as dict ----")
