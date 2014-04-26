@@ -21,6 +21,8 @@ def json_to_dict(obJson):
     if py_dict.get("perm") is None:
         py_dict["perm"] = 777
 
+    logging.debug("Converted dictionary values\n%s"%str(py_dict))
+    logging.debug("\n")
     return py_dict
 
 class ContactDls:
@@ -45,6 +47,7 @@ class ContactDls:
         payload = {"URI":path}
         http_responce = requests.get(self.dls, params=payload)
         logging.debug("-------- get_responce returns responce as dict ----")
+        #print (http_responce.json())
         return json_to_dict(http_responce.json())
 #End of ContactDls
 
@@ -61,6 +64,11 @@ def main():
     for key in jsonResponce.keys():
         print "%s\t"%(key), jsonResponce[key]
         
+    jsonResponce = dlsClient.get_responce(remoteServer)
+    print "------------------------"
+    for key in jsonResponce.keys():
+        print "%s\t"%(key), jsonResponce[key]
+     
 
 if __name__ == '__main__':
     main()
