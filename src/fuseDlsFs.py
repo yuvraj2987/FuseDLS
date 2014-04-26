@@ -33,7 +33,11 @@ class FuseDls(Operations):
 
     def _set_path(self, path):
         logging.debug("--------set path called -----")
-        logging.debug("Original Current Path:%s", self.curPath)        
+        logging.debug("Original Current Path:%s", self.curPath) 
+        if re.match(r'(.*)Trash(.*)', path, re.S):
+            logging.debug("Igonring Trash directories")
+            return
+
         if path.startswith("/"):
             self.curPath = path
         else:
