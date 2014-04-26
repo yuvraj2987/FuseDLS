@@ -7,7 +7,7 @@ import logging, time
 from fuse import FUSE, FuseOSError, Operations
 #import contactDls
 from cacheDls import Cache
-
+from dlsClinet import json_to_dict
 #################### Classes ############################
 
 class FuseDls(Operations):
@@ -16,6 +16,18 @@ class FuseDls(Operations):
         self.cache = cache
         self.dlsClient = dlsClient
         self.curPath = "/"
+        self._mount()
+
+    def _mount():
+        logging.debug("--- mounting dls ---")
+        mountResponce = self.dlsClient.do_mount()
+        fileList = mountResponce.get("files")
+        for f in fileList:
+            _val = json_to_dict(f)
+            _key = _val.get("name")
+            logging.debug("--- add %s to cache ---"%(_key))
+            self.cache.add(_key, _val)
+        logging.debug("---- mount done ----")
 
     def _full_path(self, partial):
         logging.debug("-------- get full path called -----")
@@ -30,14 +42,12 @@ class FuseDls(Operations):
                 'st_ctime'):
             st.setdefault(attr, None)
         #For ends
-        logging.debug("----- _responce_to_st function starts ----")
+        logging.debug("----- _responce_to_stat function starts ----")
         #dls responce keys mapping to st attributes
         #print "If File is directory: ", responce.has_key("dir")
-        permission = 777
-        if responce.has_key("perms"):
-            permission = int(responce["perms"])
+        permission = int(responce["perms"])
 
-        if responce.has_key("dir") and responce["dir"]:
+        if responce["dir"]:
             logging.debug("File is directory")
             st['st_mode'] = stat.S_IFDIR
         else:
@@ -46,15 +56,9 @@ class FuseDls(Operations):
         
         #Set file perimissions
         st['st_mode'] |= permission
-        
-        if responce.has_key("owner"):
-            st['st_uid'] = responce['owner']
-        if responce.has_key("group"):
-            st['st_gid'] = responce['group']
-
-        if responce.has_key("mdtm"):
-            st['st_mtime'] = responce['mdtm']
-            
+        st['st_uid'] = responce['owner']
+        st['st_gid'] = responce['group']
+        st['st_mtime'] = responce['mdtm']
         logging.debug("--- returning from _responce_to_stat function------------")
         return st
 
@@ -108,12 +112,12 @@ def main():
     remote_server = "ftp://ftp.freebsd.org"
     #dls_server = "http://ec2-184-73-223-158.compute-1.amazonaws.com:8080/DirectoryListingService/rest/dls/list"
     dlsUrl = "http://didclab-ws8.cse.buffalo.edu:8080/DirectoryListingService/rest/dls/list"
-    dls_client = contactDls.ContactDls(dls_server, remote_server)
     logging.info("Local Mountpoint:%s", mountpoint)
     logging.info("Remote Server: %s", remote_server)
     logging.info("Dls Server: %s", dls_server)
-
-    FUSE(FuseDls(mountpoint, dls_client), mountpoint, foreground=False)
+    dls_client = contactDls.ContactDls(dls_server, remote_server)
+    _cache = Cache(dls_client.get_responce)
+    FUSE(FuseDls(mountpoint, _cache, dls_client), mountpoint, foreground=False)
     print "---- FuseDLS main ends ----"
 
 if __name__ == "__main__":
