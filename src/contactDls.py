@@ -18,6 +18,9 @@ def json_to_dict(obJson):
         value = obJson.get(attr)
         py_dict[attr] = value
     
+    if py_dict.get("perm") is None:
+        py_dict["perm"] = 777
+
     return py_dict
 
 class ContactDls:
