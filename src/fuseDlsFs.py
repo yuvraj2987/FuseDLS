@@ -6,9 +6,8 @@ from sys import argv, exit
 from time import time
 import logging
 from fuse import FUSE, FuseOSError, Operations, fuse_get_context
-
-from contactDls import json_to_dict, ContactDls 
-import cacheDls
+#Custom modules
+import cacheDls, contactDls
 
 class FuseDLS(Operations):
     'FuseDLS for exporting Directory Listing Services a.k.a Stork Cloud Cache to Client as File System'
@@ -18,17 +17,13 @@ class FuseDLS(Operations):
         self.root = root
         self.curpath = "/"
         dlsUrl = "http://didclab-ws8.cse.buffalo.edu:8080/DirectoryListingService/rest/dls/list"
-        self.dls = ContactDls(dlsUrl)
+        self.dls = contactDls.ContactDls(dlsUrl)
         logging.debug("ContactDLS created")
         self.cache = cacheDls.Cache(self.dls.get_responce)
         logging.debug("Cache created")
         logging.debug("Mounting the DLS cache")
         mountResponce = self.dls.do_mount()
-        fileList = mountResponce.get("files")
-        for f in fileList:
-            val = json_to_dict(f)
-            key = val.get("name")
-            self.cache.add(key, val)
+        cacheDls.add_mount_responce(self.cache, mountResponce)
         logging.debug("DLS cache mounted")
         logging.info("--------- FuseDLS Initialized ----------")
         
@@ -60,7 +55,7 @@ class FuseDLS(Operations):
 if __name__ == '__main__':
     
     print "--- FuseDLS FileSystem started ----"
-    logging.basicConfig(filename="log/test.log", filemode= "w", level=logging.DEBUG)
+    logging.basicConfig(filename="log/fuseDls.log", filemode= "w", format="%(levelname)s::%(message)s", level=logging.DEBUG)
     logging.info("------------ FuseDLS Starts ---------")
     mountpoint = "/fuse_mount/dls"
     logging.info("mountpoint: %s ", mountpoint)
