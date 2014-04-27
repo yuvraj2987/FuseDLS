@@ -13,7 +13,7 @@ def json_to_dict(obJson):
 
     """
     py_dict = {}
-    attr_list = ['files', 'group', 'name', 'perm', 'owner', 'dir']
+    attr_list = ['files', 'group', 'name', 'perm', 'owner', 'dir', 'mdtm']
     for attr in attr_list:
         value = obJson.get(attr)
         py_dict[attr] = value

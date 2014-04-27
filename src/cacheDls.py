@@ -32,6 +32,7 @@ class Cache:
         if value is not None:
             logging.debug("------ cache Hit for %s"%(str(key)))
             value = self.update_cache(key, value)
+            logging.debug("vaule update_cache done")
             return value
 
         logging.debug("--- cache miss for %s"%(str(key)))
