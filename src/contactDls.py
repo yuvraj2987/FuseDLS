@@ -36,23 +36,30 @@ class ContactDls:
         self.dls = dlsUrl
     
     def do_mount(self):
-        logging.debug("--- mounting the dls server caches -----")
-        payload={"domount":True}
-        http_responce = requests.get(self.dls, params=payload, timeout=0.001)
-        return json_to_dict(http_responce.json())
+        try:
+            logging.debug("--- mounting the dls server caches -----")
+            payload={"domount":True}
+            http_responce = requests.get(self.dls, params=payload, timeout=1)
+            return json_to_dict(http_responce.json())
+        except requests.exceptions.Timeout:
+            logging.error("Could not connect to Dls server")
+            
 
     def get_responce(self, path):
-        logging.debug("---- get_responce starts -----")
-        logging.debug("Passed path:%s"% (path))
-        path = "ftp://"+path
-        logging.debug("Appended path:%s")
-        #path = self.remoteServer+path
-        logging.debug("Complete path:%s"% (path))
-        payload = {"URI":path}
-        http_responce = requests.get(self.dls, params=payload, timeout=0.001)
-        logging.debug("-------- get_responce returns responce as dict ----")
-        #print (http_responce.json())
-        return json_to_dict(http_responce.json())
+        try:
+            logging.debug("---- get_responce starts -----")
+            logging.debug("Passed path:%s"% (path))
+            path = "ftp://"+path
+            logging.debug("Appended path:%s")
+            #path = self.remoteServer+path
+            logging.debug("Complete path:%s"% (path))
+            payload = {"URI":path}
+            http_responce = requests.get(self.dls, params=payload, timeout=1)
+            logging.debug("-------- get_responce returns responce as dict ----")
+            #print (http_responce.json())
+            return json_to_dict(http_responce.json())
+        except Timeout:
+            logging.error("Could not connect to Dls server")
 #End of ContactDls
 
 def main():
