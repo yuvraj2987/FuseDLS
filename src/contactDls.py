@@ -16,10 +16,13 @@ def json_to_dict(obJson):
     attr_list = ['files', 'group', 'name', 'perm', 'owner', 'dir']
     for attr in attr_list:
         value = obJson.get(attr)
-        py_dict[attr] = str(value)
+        py_dict[attr] = value
     
     if py_dict.get("perm") is None:
         py_dict["perm"] = "777"
+    else:
+        py_dict["perm"] = str(py_dict["perm"])
+
     py_dict["perm"] = int(py_dict["perm"], 8)#Convert to octal number
 
     logging.debug("Converted dictionary values\n%s"%str(py_dict))
