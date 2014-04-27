@@ -38,7 +38,7 @@ class ContactDls:
     def do_mount(self):
         logging.debug("--- mounting the dls server caches -----")
         payload={"domount":True}
-        http_responce = requests.get(self.dls, params=payload)
+        http_responce = requests.get(self.dls, params=payload, timeout=0.001)
         return json_to_dict(http_responce.json())
 
     def get_responce(self, path):
@@ -49,7 +49,7 @@ class ContactDls:
         #path = self.remoteServer+path
         logging.debug("Complete path:%s"% (path))
         payload = {"URI":path}
-        http_responce = requests.get(self.dls, params=payload)
+        http_responce = requests.get(self.dls, params=payload, timeout=0.001)
         logging.debug("-------- get_responce returns responce as dict ----")
         #print (http_responce.json())
         return json_to_dict(http_responce.json())
