@@ -4,6 +4,7 @@ import contactDls
 ########## Global Function ###########
 def add_mount_responce(cache, mountResponce):
     logging.debug("---- Adding mountResponce to cache ----")
+    cache.add("/", mountResponce)
     fileList = mountResponce.get("files")
     logging.debug("File List size:%d", len(fileList))
     for f in fileList:
