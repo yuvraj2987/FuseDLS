@@ -1,8 +1,6 @@
 #!/usr/bin/env python
 
-from errno import ENOENT
-#from stat import S_IFDIR, S_IFREG
-import stat
+import errno, stat, os
 from sys import argv, exit
 import time
 import logging
@@ -15,8 +13,8 @@ class FuseDLS(Operations):
     
     def __init__(self, root):
         logging.info("----- Init FuseDLS FS---")
-        self.root = root
-        self.curpath = "/"
+        self.root = os.path.join(root)
+        self.curpath = self.root
         dlsUrl = "http://didclab-ws8.cse.buffalo.edu:8080/DirectoryListingService/rest/dls/list"
         self.dls = contactDls.ContactDls(dlsUrl)
         logging.debug("ContactDLS created")
@@ -24,9 +22,24 @@ class FuseDLS(Operations):
         logging.debug("Cache created")
         logging.debug("Mounting the DLS cache")
         mountResponce = self.dls.do_mount()
-        cacheDls.add_mount_responce(self.cache, mountResponce)
+        cacheDls.add_mount_responce(self.cache, mountResponce, root)
         logging.debug("DLS cache mounted")
         logging.info("--------- FuseDLS Initialized ----------")
+
+    def _full_path(self, partial):
+        logging.debug("------- Full path called --------")
+        logging.debug("Passed path: %s", partial)
+        if partial == "/":
+            logging.debug("Partial is current dir")
+            partial = ""
+        elif partial.startswith("/"):
+            logging.debug("Partial starts with /")
+            partial = partial[1:]
+        logging.debug("Create full os path")
+        path = os.path.join(self.root, partial)
+        logging.debug("Full path: %s", path)
+        return path
+
     #End of __init__
     def _convert_to_stat(self, responce):
         logging.debug("Get stat values")
@@ -38,16 +51,16 @@ class FuseDLS(Operations):
         else:
             logging.debug("%s is file", responce['name'])
             st['st_mode'] = stat.S_IFREG
-        
+            
         st['st_mode'] = (st['st_mode'] | responce['perm'])
         st['st_ctime'] = st['st_mtime'] = st['st_atime'] = time.time()
         return st 
-
+    
     # FileSystem Methods
     # -----------------------
     def getattr(self, path, fh=None):
         logging.debug("------- getattr called --------")
-        logging.debug("Original path:%s", path)
+        path = self._full_path(path)
         """if path == '/':
             st = dict(st_mode=(stat.S_IFDIR | 0755), st_nlink=2)
             st['st_ctime'] = st['st_mtime'] = st['st_atime'] = time.time()
@@ -58,6 +71,21 @@ class FuseDLS(Operations):
         logging.debug("Stat for %s is %s", path, str(st))
         return st
 
+    def readdir(self, path, fh):
+        logging.debug("----- readdir called ------")
+        path = self._full_path(path)
+        result = self.cache.get_cache(path)
+        if not result['dir']:
+            raise FuseOSError(errno.EBADF)
+        dirents = ['.', '..']
+        fileList = result.get('files')
+        for f in fileList:
+            fileName = f.get('name')
+            logging.debug("file: %s is directory? %s", fileName, f.get('dir'))
+            if f.get('dir'):
+                dirents.append(fileName)
+        #End of for
+        logging.debug("Dirents list: %s", str(dirents))
 
     # Disable unused operations:
     access = None
@@ -78,4 +106,4 @@ if __name__ == '__main__':
     logging.info("------------ FuseDLS Starts ---------")
     mountpoint = "/fuse_mount/dls"
     logging.info("mountpoint: %s ", mountpoint)
-    fuse = FUSE(FuseDLS(mountpoint), mountpoint, foreground=False)
+    fuse = FUSE(FuseDLS(mountpoint), mountpoint, foreground=False, nothreads=True)
