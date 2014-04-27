@@ -2,9 +2,9 @@ import logging, time
 import contactDls
 
 ########## Global Function ###########
-def add_mount_responce(cache, mountResponce):
+def add_mount_responce(cache, mountResponce, mount):
     logging.debug("---- Adding mountResponce to cache ----")
-    cache.add("/", mountResponce)
+    cache.add(mount, mountResponce)
     fileList = mountResponce.get("files")
     logging.debug("File List size:%d", len(fileList))
     for f in fileList:
@@ -98,7 +98,7 @@ if __name__ == "__main__":
     mountResponce = dlsClient.do_mount()
     #print "mount responce: ", mountResponce
     logging.debug("mount responce %s", str(mountResponce))
-    add_mount_responce(cache, mountResponce)
+    add_mount_responce(cache, mountResponce, "/fuse_mount/dls")
     print "-- cache added ----"
     value = cache.get_cache(remoteServer) 
     print "value returned by the cache"
