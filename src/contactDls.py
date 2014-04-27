@@ -16,10 +16,11 @@ def json_to_dict(obJson):
     attr_list = ['files', 'group', 'name', 'perm', 'owner', 'dir']
     for attr in attr_list:
         value = obJson.get(attr)
-        py_dict[attr] = value
+        py_dict[attr] = str(value)
     
     if py_dict.get("perm") is None:
-        py_dict["perm"] = 777
+        py_dict["perm"] = "777"
+    py_dict["perm"] = int(py_dict["perm"], 8)#Convert to octal number
 
     logging.debug("Converted dictionary values\n%s"%str(py_dict))
     logging.debug("\n")
@@ -55,7 +56,7 @@ def main():
     print "Testing ContactDls class"
     #dlsUrl = "http://ec2-184-73-223-158.compute-1.amazonaws.com:8080/DirectoryListingService/rest/dls/list"
     dlsUrl = "http://didclab-ws8.cse.buffalo.edu:8080/DirectoryListingService/rest/dls/list"
-    remoteServer = "ftp://ftp.freebsd.org"
+    remoteServer = "ftp.freebsd.org"
     dlsClient = ContactDls(dlsUrl)
     #jsonResponce = dlsClient.get_responce(remoteServer)
     jsonResponce = dlsClient.do_mount()
