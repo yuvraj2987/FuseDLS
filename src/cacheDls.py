@@ -48,9 +48,9 @@ def tmp(key):
     return key.upper()
 
 if __name__ == "__main__":
-    logfile = "log/"+time.strftime("%Y_%m_%d_%H_%M_%S", time.localtime(time.time()))+".log"
+    logfile = "log/cache.log"
     print "log file name: ", logfile
-    logging.basicConfig(filename=logfile, format='%(levelname)s:%(message)s', level=logging.DEBUG)
+    logging.basicConfig(filename=logfile, filemode = "w", format='%(levelname)s:%(message)s', level=logging.DEBUG)
     dlsUrl = "http://didclab-ws8.cse.buffalo.edu:8080/DirectoryListingService/rest/dls/list"
     #remoteServer = "ftp://ftp.freebsd.org"
     remoteServer = "ftp.freebsd.org"
@@ -65,5 +65,6 @@ if __name__ == "__main__":
         cache.add(_key, _val)
     print "-- cache added ----"
     value = cache(remoteServer) 
+    print "value returned by the cache"
     print (value)
 
