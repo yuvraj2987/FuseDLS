@@ -1,6 +1,22 @@
 import logging, time
 import contactDls
 
+########## Global Function ###########
+def add_mount_responce(cache, mountResponce):
+    logging.debug("---- Adding mountResponce to cache ----")
+    fileList = mountResponce.get("files")
+    logging.debug("File List size:%d", len(fileList))
+    for f in fileList:
+        logging.debug("File:%s", str(f))
+        _val = contactDls.json_to_dict(f)
+        _key = _val.get("name")
+        cache.add(_key, _val)
+
+    logging.debug("@@@@ Cache View @@@@\n%s", str(cache.mapping))
+    logging.debug("---- mountResponce added to cache")
+
+
+
 class Cache:
 
     def __init__(self, funct, maxsize=1024):
@@ -41,7 +57,7 @@ class Cache:
         logging.debug("Check if update is required")
         if value['dir'] and value['files'] is None:
             logging.debug("Update required")
-            update = self.org_function(key)
+            update = self.org_function(keyStr)
             logging.debug("Update responce is %s", str(update))
             logging.debug("Update values parameter")
             value['files'] = update['files']
@@ -53,12 +69,12 @@ class Cache:
         
     def add(self, *args):
         mapping = self.mapping
-        #key = args[0]
-        #value = args[1]
+        key = args[0]
+        value = args[1]
         logging.debug("adding %s into cache"%(key))
         mapping[key] = value
-        logging.debug("@@@@@@ Cache view @@@@@@@@@")
-        logging.debug(mapping)
+        #logging.debug("@@@@@@ Cache view @@@@@@@@@")
+        #logging.debug(mapping)
         return
 ### class ends
 def tmp(key):
@@ -79,12 +95,8 @@ if __name__ == "__main__":
     cache = Cache(dlsClient.get_responce)
     mountResponce = dlsClient.do_mount()
     #print "mount responce: ", mountResponce
-    logging.debug("mount responce %s", mountresponce)
-    fileList = mountResponce.get("files")
-    for f in fileList:
-        _val = contactDls.json_to_dict(f)
-        _key = _val.get("name")
-        cache.add(_key, _val)
+    logging.debug("mount responce %s", str(mountResponce))
+    add_mount_responce(cache, mountResponce)
     print "-- cache added ----"
     value = cache.get_cache(remoteServer) 
     print "value returned by the cache"
