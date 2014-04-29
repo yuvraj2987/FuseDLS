@@ -20,9 +20,14 @@ class FuseDLS(Operations):
         logging.debug("ContactDLS created")
         self.cache = cacheDls.Cache(self.dls.get_responce)
         logging.debug("Cache created")
+        self.__mount__()
+
+    def __mount__():
+        logging.debug("-------- Mount Called ---------")
         logging.debug("Mounting the DLS cache")
         mountResponce = self.dls.do_mount()
-        cacheDls.add_mount_responce(self.cache, mountResponce, root)
+        path = os.path.join(self.root, "")
+        cacheDls.add_mount_responce(self.cache, mountResponce, path)
         logging.debug("DLS cache mounted")
         logging.info("--------- FuseDLS Initialized ----------")
 
