@@ -16,13 +16,13 @@ class FuseDLS(Operations):
         self.root = os.path.join(root)
         self.curpath = self.root
         dlsUrl = "http://didclab-ws8.cse.buffalo.edu:8080/DirectoryListingService/rest/dls/list"
-        self.dls = contactDls.ContactDls(dlsUrl)
+        self.dls = contactDls.ContactDls(dlsUrl, self.root)
         logging.debug("ContactDLS created")
         self.cache = cacheDls.Cache(self.dls.get_responce)
         logging.debug("Cache created")
         self.__mount__()
 
-    def __mount__():
+    def __mount__(self):
         logging.debug("-------- Mount Called ---------")
         logging.debug("Mounting the DLS cache")
         mountResponce = self.dls.do_mount()
@@ -91,6 +91,7 @@ class FuseDLS(Operations):
                 dirents.append(fileName)
         #End of for
         logging.debug("Dirents list: %s", str(dirents))
+        return dirents
 
     # Disable unused operations:
     access = None
