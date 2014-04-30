@@ -93,7 +93,7 @@ if __name__ == "__main__":
     logging.info("----------- Cache DLS started -----------------")
     #remoteServer = "ftp://ftp.freebsd.org"
     remoteServer = "ftp.freebsd.org"
-    dlsClient = contactDls.ContactDls(dlsUrl)
+    dlsClient = contactDls.ContactDls(dlsUrl, "/fuse_mount/dls")
     cache = Cache(dlsClient.get_responce)
     mountResponce = dlsClient.do_mount()
     #print "mount responce: ", mountResponce
