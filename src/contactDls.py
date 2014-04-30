@@ -2,7 +2,7 @@
 
 
 import os, sys, errno
-
+import re
 import requests
 import logging
 
@@ -32,8 +32,18 @@ def json_to_dict(obJson):
 class ContactDls:
     ' Class to communicate with Directory Listing Service'
 
-    def __init__(self, dlsUrl):
+    def __init__(self, dlsUrl, path):
         self.dls = dlsUrl
+        self.mountPath = os.path.join(path)
+
+    def __remote_path__(self, _path):
+        logging.debug("--- remote path called ----")
+        logging.debug("Original path:%s", _path)
+        _path = re.sub(self.mountPath, "", _path, 1)
+        logging.debug("Path after removing mountpoint:%s", _path)
+        _path = "ftp:/"+_path
+        logging.debug("Final path%s", _path)
+        return _path
     
     def do_mount(self):
         try:
@@ -48,26 +58,30 @@ class ContactDls:
     def get_responce(self, path):
         try:
             logging.debug("---- get_responce starts -----")
-            logging.debug("Passed path:%s"% (path))
-            path = "ftp://"+path
-            logging.debug("Appended path:%s")
+            #logging.debug("Passed path:%s"% (path))
+            #path = "ftp://"+path
+            #logging.debug("Appended path:%s")
             #path = self.remoteServer+path
-            logging.debug("Complete path:%s"% (path))
+            #logging.debug("Complete path:%s"% (path))
+            path = self.__remote_path__(path)
             payload = {"URI":path}
             http_responce = requests.get(self.dls, params=payload, timeout=1)
             logging.debug("-------- get_responce returns responce as dict ----")
             #print (http_responce.json())
             return json_to_dict(http_responce.json())
-        except Timeout:
+        except requests.exceptions.Timeout:
             logging.error("Could not connect to Dls server")
 #End of ContactDls
 
 def main():
     print "Testing ContactDls class"
     #dlsUrl = "http://ec2-184-73-223-158.compute-1.amazonaws.com:8080/DirectoryListingService/rest/dls/list"
+    logging.basicConfig(filename="log/contactDls.log", filemode= "w", format="%(levelname)s::%(message)s", level=logging.DEBUG)
+ 
     dlsUrl = "http://didclab-ws8.cse.buffalo.edu:8080/DirectoryListingService/rest/dls/list"
-    remoteServer = "ftp.freebsd.org"
-    dlsClient = ContactDls(dlsUrl)
+    remoteServer = "/fuse_mount/dls/ftp.freebsd.org"
+    mountPath = "/fuse_mount/dls"
+    dlsClient = ContactDls(dlsUrl, mountPath)
     #jsonResponce = dlsClient.get_responce(remoteServer)
     jsonResponce = dlsClient.do_mount()
     #print "json responce\n", jsonResponce
